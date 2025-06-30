@@ -20,6 +20,7 @@ class _AddEditStudentScreenState extends State<AddEditStudentScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _amountController = TextEditingController();
 
   String? _selectedCourseType;
   int? _selectedCourseDuration;
@@ -37,6 +38,7 @@ class _AddEditStudentScreenState extends State<AddEditStudentScreen> {
       _selectedCourseDuration = widget.student!.courseDuration;
       _selectedStartDate = widget.student!.startDate;
       _photoPath = widget.student!.photoPath;
+      _amountController.text = widget.student!.amount.toString();
     }
   }
 
@@ -45,6 +47,7 @@ class _AddEditStudentScreenState extends State<AddEditStudentScreen> {
     _nameController.dispose();
     _phoneController.dispose();
     _addressController.dispose();
+    _amountController.dispose();
     super.dispose();
   }
 
@@ -64,7 +67,10 @@ class _AddEditStudentScreenState extends State<AddEditStudentScreen> {
 
   void _saveStudent() {
     if (_formKey.currentState!.validate()) {
-      final studentProvider = Provider.of<StudentProvider>(context, listen: false);
+      final studentProvider = Provider.of<StudentProvider>(
+        context,
+        listen: false,
+      );
 
       final newStudent = Student(
         id: widget.student?.id ?? const Uuid().v4(),
@@ -75,6 +81,7 @@ class _AddEditStudentScreenState extends State<AddEditStudentScreen> {
         courseType: _selectedCourseType!,
         courseDuration: _selectedCourseDuration!,
         startDate: _selectedStartDate,
+        amount: double.parse(_amountController.text),
       );
 
       if (widget.student == null) {
@@ -102,15 +109,22 @@ class _AddEditStudentScreenState extends State<AddEditStudentScreen> {
               CircleAvatar(
                 radius: 60,
                 backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                child: _photoPath == null
-                    ? Icon(Icons.person, size: 60, color: Theme.of(context).colorScheme.onPrimaryContainer)
-                    : null, // TODO: Display image from _photoPath
+                child:
+                    _photoPath == null
+                        ? Icon(
+                          Icons.person,
+                          size: 60,
+                          color:
+                              Theme.of(context).colorScheme.onPrimaryContainer,
+                        )
+                        : null, // TODO: Display image from _photoPath
               ),
               TextButton(
                 onPressed: () {
-                  // TODO: Implement image picking logic
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Image picking not yet implemented.')),
+                    const SnackBar(
+                      content: Text('Image picking not yet implemented.'),
+                    ),
                   );
                 },
                 child: const Text('Add Photo'),
@@ -164,6 +178,26 @@ class _AddEditStudentScreenState extends State<AddEditStudentScreen> {
               ),
               const SizedBox(height: kMediumPadding),
 
+              TextFormField(
+                controller: _amountController,
+                decoration: const InputDecoration(
+                  labelText: 'Course Amount',
+                  border: OutlineInputBorder(),
+                  prefixText: '₹ ',
+                ),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter the course amount';
+                  }
+                  if (double.tryParse(value) == null) {
+                    return 'Please enter a valid amount';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: kMediumPadding),
+
               DropdownButtonFormField<String>(
                 value: _selectedCourseType,
                 decoration: const InputDecoration(
@@ -173,6 +207,10 @@ class _AddEditStudentScreenState extends State<AddEditStudentScreen> {
                 items: const [
                   DropdownMenuItem(value: 'Auto', child: Text('Auto')),
                   DropdownMenuItem(value: 'Manual', child: Text('Manual')),
+                  DropdownMenuItem(
+                    value: 'Both',
+                    child: Text('Both (Auto + Manual)'),
+                  ),
                 ],
                 onChanged: (value) {
                   setState(() {
@@ -214,10 +252,17 @@ class _AddEditStudentScreenState extends State<AddEditStudentScreen> {
               const SizedBox(height: kMediumPadding),
 
               ListTile(
-                title: Text('Start Date: ${MaterialLocalizations.of(context).formatShortDate(_selectedStartDate)}'),
+                title: Text(
+                  'Start Date: ${MaterialLocalizations.of(context).formatShortDate(_selectedStartDate)}',
+                ),
                 trailing: const Icon(Icons.calendar_today),
                 onTap: _pickDate,
-                shape: RoundedRectangleBorder(side: BorderSide(color: Theme.of(context).colorScheme.outline), borderRadius: BorderRadius.circular(kSmallBorderRadius)),
+                shape: RoundedRectangleBorder(
+                  side: BorderSide(
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
+                  borderRadius: BorderRadius.circular(kSmallBorderRadius),
+                ),
               ),
               const SizedBox(height: kLargePadding),
 
@@ -226,7 +271,9 @@ class _AddEditStudentScreenState extends State<AddEditStudentScreen> {
                 child: ElevatedButton(
                   onPressed: _saveStudent,
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: kMediumPadding),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: kMediumPadding,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(kSmallBorderRadius),
                     ),
@@ -237,6 +284,7 @@ class _AddEditStudentScreenState extends State<AddEditStudentScreen> {
                   ),
                 ),
               ),
+              SizedBox(height: 100),
             ],
           ),
         ),

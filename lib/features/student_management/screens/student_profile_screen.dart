@@ -104,6 +104,11 @@ class StudentProfileScreen extends StatelessWidget {
               label: 'End Date',
               value: DateFormat('dd MMM yyyy').format(student.endDate),
             ),
+            ProfileDetailItem(
+              icon: Icons.currency_rupee,
+              label: 'Course Amount',
+              value: '₹ ${student.amount.toStringAsFixed(2)}',
+            ),
             const SizedBox(height: kLargePadding),
             Text(
               'Attendance Progress',

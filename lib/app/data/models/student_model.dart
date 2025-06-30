@@ -7,6 +7,7 @@ class Student {
   String courseType;
   int courseDuration;
   DateTime startDate;
+  double amount;
 
   DateTime get endDate => startDate.add(Duration(days: courseDuration));
 
@@ -19,6 +20,7 @@ class Student {
     required this.courseType,
     required this.courseDuration,
     required this.startDate,
+    required this.amount,
   });
 
   factory Student.fromJson(Map<String, dynamic> json) {
@@ -31,6 +33,7 @@ class Student {
       courseType: json['courseType'],
       courseDuration: json['courseDuration'],
       startDate: DateTime.parse(json['startDate']),
+      amount: json['amount']?.toDouble() ?? 0.0,
     );
   }
 
@@ -44,6 +47,7 @@ class Student {
       'courseType': courseType,
       'courseDuration': courseDuration,
       'startDate': startDate.toIso8601String(),
+      'amount': amount,
     };
   }
 }
