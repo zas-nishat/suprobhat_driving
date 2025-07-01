@@ -42,17 +42,8 @@ class _StudentListScreenState extends State<StudentListScreen> {
               decoration: const InputDecoration(
                 labelText: 'Search by Name or Phone',
                 prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(30)),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(30)),
-                  borderSide: BorderSide(color: Colors.grey),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(30)),
-                  borderSide: BorderSide(color: Colors.blue),
-                ),
+
+                border: OutlineInputBorder(),
               ),
               onChanged: (query) {
                 setState(() {
@@ -61,7 +52,6 @@ class _StudentListScreenState extends State<StudentListScreen> {
               },
             ),
           ),
-
           Expanded(
             child: Consumer<StudentProvider>(
               builder: (context, studentProvider, child) {

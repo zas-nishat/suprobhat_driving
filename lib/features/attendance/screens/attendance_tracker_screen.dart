@@ -15,6 +15,14 @@ class AttendanceTrackerScreen extends StatefulWidget {
 
 class _AttendanceTrackerScreenState extends State<AttendanceTrackerScreen> {
   DateTime _selectedDate = DateTime.now();
+  String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   void _pickDate() async {
     final DateTime? picked = await showDatePicker(
@@ -47,10 +55,40 @@ class _AttendanceTrackerScreenState extends State<AttendanceTrackerScreen> {
               onTap: _pickDate,
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: kMediumPadding),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Search by name or phone number',
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          setState(() {
+                            _searchQuery = '';
+                            _searchController.clear();
+                          });
+                        },
+                      )
+                    : null,
+                border: const OutlineInputBorder(),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value;
+                });
+              },
+            ),
+          ),
+          const SizedBox(height: kMediumPadding),
           Expanded(
             child: Consumer<StudentProvider>(
               builder: (context, studentProvider, child) {
-                if (studentProvider.students.isEmpty) {
+                final allStudents = studentProvider.students;
+                if (allStudents.isEmpty) {
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -71,10 +109,42 @@ class _AttendanceTrackerScreenState extends State<AttendanceTrackerScreen> {
                     ),
                   );
                 }
+
+                final filteredStudents = _searchQuery.isEmpty
+                    ? allStudents
+                    : allStudents.where((student) {
+                        final name = student.name.toLowerCase();
+                        final phone = student.phone.toLowerCase();
+                        final query = _searchQuery.toLowerCase();
+                        return name.contains(query) || phone.contains(query);
+                      }).toList();
+
+                if (filteredStudents.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.search_off,
+                          size: 64,
+                          color: Theme.of(context).colorScheme.outline,
+                        ),
+                        const SizedBox(height: kMediumPadding),
+                        Text(
+                          'No students found matching "$_searchQuery"',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.outline,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
                 return ListView.builder(
-                  itemCount: studentProvider.students.length,
+                  itemCount: filteredStudents.length,
                   itemBuilder: (context, index) {
-                    final student = studentProvider.students[index];
+                    final student = filteredStudents[index];
                     return AttendanceListItem(
                       student: student,
                       selectedDate: _selectedDate,
