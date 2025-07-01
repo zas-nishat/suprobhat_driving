@@ -42,7 +42,17 @@ class _StudentListScreenState extends State<StudentListScreen> {
               decoration: const InputDecoration(
                 labelText: 'Search by Name or Phone',
                 prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(30)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(30)),
+                  borderSide: BorderSide(color: Colors.grey),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(30)),
+                  borderSide: BorderSide(color: Colors.blue),
+                ),
               ),
               onChanged: (query) {
                 setState(() {
@@ -51,14 +61,15 @@ class _StudentListScreenState extends State<StudentListScreen> {
               },
             ),
           ),
+
           Expanded(
             child: Consumer<StudentProvider>(
               builder: (context, studentProvider, child) {
-                final filteredStudents = studentProvider.searchStudents(_searchQuery);
+                final filteredStudents = studentProvider.searchStudents(
+                  _searchQuery,
+                );
                 if (filteredStudents.isEmpty) {
-                  return const Center(
-                    child: Text('No students found.'),
-                  );
+                  return const Center(child: Text('No students found.'));
                 }
                 return ListView.builder(
                   itemCount: filteredStudents.length,
