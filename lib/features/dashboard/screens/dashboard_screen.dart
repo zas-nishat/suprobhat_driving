@@ -4,11 +4,12 @@ import 'package:suprobhat_driving_app/app/config/constants.dart';
 import 'package:suprobhat_driving_app/app/data/providers/student_provider.dart';
 import 'package:suprobhat_driving_app/features/dashboard/widgets/summary_card.dart';
 import 'package:suprobhat_driving_app/features/dashboard/widgets/reminder_list_item.dart';
+import 'package:suprobhat_driving_app/features/profile/screen/profile_screen.dart';
 import 'package:suprobhat_driving_app/shared_widgets/custom_app_bar.dart';
 import 'package:suprobhat_driving_app/features/student_management/screens/add_edit_student_screen.dart';
 import 'package:suprobhat_driving_app/features/student_management/screens/student_list_screen.dart';
 import 'package:suprobhat_driving_app/features/attendance/screens/attendance_tracker_screen.dart';
-import 'package:suprobhat_driving_app/features/training_videos/screens/video_grid_screen.dart';
+import '../../training_videos/screens/videos_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -24,7 +25,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _DashboardContent(),
     const StudentListScreen(),
     const AttendanceTrackerScreen(),
-    ChannelPage(),
+    VideosScreen(),
+    ProfilScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -50,8 +52,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.video_library),
-            label: 'Youtube',
+            label: 'Videos',
           ),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Theme.of(context).colorScheme.primary,

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class ChannelPage extends StatefulWidget {
+class ProfilScreen extends StatefulWidget {
   @override
-  State<ChannelPage> createState() => _ChannelPageState();
+  State<ProfilScreen> createState() => _ProfilScreenState();
 }
 
-class _ChannelPageState extends State<ChannelPage> {
+class _ProfilScreenState extends State<ProfilScreen> {
   final String channelUrl =
       "https://www.youtube.com/@suprobhatdrivingtrainingce5295";
   final String phoneNumber = "01945191220";
