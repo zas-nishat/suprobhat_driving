@@ -40,6 +40,20 @@ class _ChannelPageState extends State<ChannelPage> {
     }
   }
 
+  void _openMap() async {
+    final googleMapsUrl =
+        'https://www.google.com/maps/place/beFair+Group+(%E0%A6%AC%E0%A6%BF%E0%A6%AB%E0%A7%87%E0%A7%9F%E0%A6%BE%E0%A6%B0+%E0%A6%97%E0%A7%8D%E0%A6%B0%E0%A7%81%E0%A6%AA)/@23.8289741,90.3761674,19.1z/data=!4m6!3m5!1s0x3755c79361ae864b:0xa81bf347c1d8f7ac!8m2!3d23.8283619!4d90.3765903!16s%2Fg%2F11p0z97wcx?authuser=0&entry=ttu&g_ep=EgoyMDI1MDYyNi4wIKXMDSoASAFQAw%3D%3D';
+    final uri = Uri.parse(googleMapsUrl);
+
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Could not open the map')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -135,6 +149,11 @@ class _ChannelPageState extends State<ChannelPage> {
                 ),
 
                 SizedBox(height: 10),
+                ListTile(
+                  leading: Icon(Icons.person),
+                  title: Text("Name"),
+                  subtitle: Text(userName),
+                ),
 
                 ListTile(
                   leading: Icon(Icons.phone),
@@ -154,6 +173,12 @@ class _ChannelPageState extends State<ChannelPage> {
                   leading: Icon(Icons.chat),
                   title: Text("IMO"),
                   subtitle: Text(imoNumber),
+                ),
+                ListTile(
+                  leading: Icon(Icons.location_on),
+                  title: Text("Location"),
+                  subtitle: Text("Mirpur, Dhaka"),
+                  onTap: () => _openMap(),
                 ),
               ],
             ),
