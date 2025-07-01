@@ -4,6 +4,10 @@ import 'package:provider/provider.dart';
 import 'package:suprobhat_driving_app/app/data/providers/student_provider.dart';
 import 'package:suprobhat_driving_app/app/config/constants.dart';
 
+// Custom color constants for attendance
+const attendancePresentColor = Color(0xFF008B8B); // Darker teal
+const attendanceAbsentColor = Color(0xFFDC143C); // Crimson red
+
 class AttendanceCalendar extends StatefulWidget {
   final String studentId;
   final DateTime? startDate;
@@ -52,14 +56,17 @@ class _AttendanceCalendarState extends State<AttendanceCalendar> {
               CalendarFormat.month: 'Month',
               CalendarFormat.week: 'Week',
             },
-            selectedDayPredicate: (day) => false, // Disable selected day highlight
+            selectedDayPredicate:
+                (day) => false, // Disable selected day highlight
             onDaySelected: (selectedDay, focusedDay) {
               // Only allow marking attendance between course start and end dates
               if (selectedDay.isBefore(student.startDate) ||
                   selectedDay.isAfter(student.endDate)) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('You can only mark attendance during the course period.'),
+                    content: Text(
+                      'You can only mark attendance during the course period.',
+                    ),
                   ),
                 );
                 return;
@@ -70,7 +77,7 @@ class _AttendanceCalendarState extends State<AttendanceCalendar> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('Attendance is already marked for this day'),
-                    backgroundColor: Colors.teal,
+                    backgroundColor: attendancePresentColor,
                     duration: Duration(seconds: 1),
                   ),
                 );
@@ -80,16 +87,20 @@ class _AttendanceCalendarState extends State<AttendanceCalendar> {
               setState(() {
                 _focusedDay = focusedDay;
               });
-              
+
               // Always mark as present when selecting a date
-              studentProvider.markAttendance(widget.studentId, selectedDay, true);
+              studentProvider.markAttendance(
+                widget.studentId,
+                selectedDay,
+                true,
+              );
 
               // Show confirmation
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Attendance marked as present'),
                   duration: Duration(seconds: 1),
-                  backgroundColor: Colors.teal,
+                  backgroundColor: attendancePresentColor,
                 ),
               );
             },
@@ -110,33 +121,38 @@ class _AttendanceCalendarState extends State<AttendanceCalendar> {
                 ),
                 shape: BoxShape.circle,
               ),
-              todayTextStyle: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              todayTextStyle: const TextStyle(fontWeight: FontWeight.bold),
             ),
             calendarBuilders: CalendarBuilders(
               defaultBuilder: (context, date, _) {
                 final isPresent = attendanceMap[date] ?? false;
-                final isInCourse = !date.isBefore(student.startDate) && 
-                                 !date.isAfter(student.endDate);
+                final isInCourse =
+                    !date.isBefore(student.startDate) &&
+                    !date.isAfter(student.endDate);
                 final hasAttendance = attendanceMap.containsKey(date);
-                
+
                 return Container(
                   margin: const EdgeInsets.all(4),
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: hasAttendance
-                        ? (isPresent ? Colors.teal.withOpacity(0.3) : Colors.red.withOpacity(0.3))
-                        : null,
+                    color:
+                        hasAttendance
+                            ? (isPresent
+                                ? attendancePresentColor.withOpacity(0.8)
+                                : attendanceAbsentColor.withOpacity(0.2))
+                            : null,
                   ),
                   child: Text(
                     '${date.day}',
                     style: TextStyle(
-                      color: !isInCourse 
-                          ? Theme.of(context).disabledColor
-                          : hasAttendance
-                              ? (isPresent ? Colors.teal : Colors.red)
+                      color:
+                          !isInCourse
+                              ? Theme.of(context).disabledColor
+                              : hasAttendance
+                              ? (isPresent
+                                  ? Colors.white
+                                  : attendanceAbsentColor)
                               : null,
                       fontWeight: hasAttendance ? FontWeight.bold : null,
                     ),
@@ -145,18 +161,22 @@ class _AttendanceCalendarState extends State<AttendanceCalendar> {
               },
               todayBuilder: (context, date, _) {
                 final isPresent = attendanceMap[date] ?? false;
-                final isInCourse = !date.isBefore(student.startDate) && 
-                                 !date.isAfter(student.endDate);
+                final isInCourse =
+                    !date.isBefore(student.startDate) &&
+                    !date.isAfter(student.endDate);
                 final hasAttendance = attendanceMap.containsKey(date);
-                
+
                 return Container(
                   margin: const EdgeInsets.all(4),
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: hasAttendance
-                        ? (isPresent ? Colors.teal.withOpacity(0.3) : Colors.red.withOpacity(0.3))
-                        : null,
+                    color:
+                        hasAttendance
+                            ? (isPresent
+                                ? attendancePresentColor.withOpacity(0.8)
+                                : attendanceAbsentColor.withOpacity(0.2))
+                            : null,
                     border: Border.all(
                       color: Theme.of(context).colorScheme.primary,
                       width: 1,
@@ -165,10 +185,13 @@ class _AttendanceCalendarState extends State<AttendanceCalendar> {
                   child: Text(
                     '${date.day}',
                     style: TextStyle(
-                      color: !isInCourse 
-                          ? Theme.of(context).disabledColor
-                          : hasAttendance
-                              ? (isPresent ? Colors.teal : Colors.red)
+                      color:
+                          !isInCourse
+                              ? Theme.of(context).disabledColor
+                              : hasAttendance
+                              ? (isPresent
+                                  ? Colors.white
+                                  : attendanceAbsentColor)
                               : null,
                       fontWeight: FontWeight.bold,
                     ),
@@ -183,14 +206,14 @@ class _AttendanceCalendarState extends State<AttendanceCalendar> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             _LegendItem(
-              color: Colors.teal.withOpacity(0.3),
-              textColor: Colors.teal,
+              color: attendancePresentColor.withOpacity(0.8),
+              textColor: Colors.white,
               label: 'Present',
             ),
             const SizedBox(width: kLargePadding),
             _LegendItem(
-              color: Colors.red.withOpacity(0.3),
-              textColor: Colors.red,
+              color: attendanceAbsentColor.withOpacity(0.2),
+              textColor: attendanceAbsentColor,
               label: 'Absent',
             ),
           ],
@@ -221,20 +244,15 @@ class _LegendItem extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: color,
-            border: Border.all(
-              color: textColor,
-            ),
+            border: Border.all(color: textColor),
           ),
         ),
         const SizedBox(width: 8),
         Text(
           label,
-          style: TextStyle(
-            color: textColor,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
         ),
       ],
     );
   }
-} 
+}

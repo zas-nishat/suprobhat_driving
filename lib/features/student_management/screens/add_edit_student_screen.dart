@@ -23,12 +23,15 @@ class _AddEditStudentScreenState extends State<AddEditStudentScreen> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
+  final TextEditingController _nidNumberController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
 
   String? _selectedCourseType;
   int? _selectedCourseDuration;
   DateTime _selectedStartDate = DateTime.now();
   String? _photoPath;
+  String? _nidFrontPath;
+  String? _nidBackPath;
 
   @override
   void initState() {
@@ -42,6 +45,9 @@ class _AddEditStudentScreenState extends State<AddEditStudentScreen> {
       _selectedStartDate = widget.student!.startDate;
       _photoPath = widget.student!.photoPath;
       _amountController.text = widget.student!.amount.toString();
+      _nidNumberController.text = widget.student!.nidNumber ?? '';
+      _nidFrontPath = widget.student!.nidFrontPath;
+      _nidBackPath = widget.student!.nidBackPath;
     }
   }
 
@@ -51,6 +57,7 @@ class _AddEditStudentScreenState extends State<AddEditStudentScreen> {
     _phoneController.dispose();
     _addressController.dispose();
     _amountController.dispose();
+    _nidNumberController.dispose();
     super.dispose();
   }
 
@@ -68,18 +75,28 @@ class _AddEditStudentScreenState extends State<AddEditStudentScreen> {
     }
   }
 
-  Future<void> _pickImage(ImageSource source) async {
+  Future<void> _pickImage(ImageSource source, String type) async {
     try {
       final XFile? pickedFile = await _picker.pickImage(
         source: source,
-        maxWidth: 800,
-        maxHeight: 800,
+        maxWidth: 1600,
+        maxHeight: 1600,
         imageQuality: 85,
       );
 
       if (pickedFile != null) {
         setState(() {
-          _photoPath = pickedFile.path;
+          switch (type) {
+            case 'profile':
+              _photoPath = pickedFile.path;
+              break;
+            case 'nidFront':
+              _nidFrontPath = pickedFile.path;
+              break;
+            case 'nidBack':
+              _nidBackPath = pickedFile.path;
+              break;
+          }
         });
       }
     } catch (e) {
@@ -91,19 +108,45 @@ class _AddEditStudentScreenState extends State<AddEditStudentScreen> {
     }
   }
 
-  void _showImagePickerOptions() {
+  void _showImagePickerOptions(String type) {
+    String title;
+    switch (type) {
+      case 'profile':
+        title = 'Profile Photo';
+        break;
+      case 'nidFront':
+        title = 'NID Front Photo';
+        break;
+      case 'nidBack':
+        title = 'NID Back Photo';
+        break;
+      default:
+        title = 'Photo';
+    }
+
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
         return SafeArea(
-          child: Wrap(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
               ListTile(
                 leading: const Icon(Icons.photo_library),
                 title: const Text('Choose from Gallery'),
                 onTap: () {
                   Navigator.pop(context);
-                  _pickImage(ImageSource.gallery);
+                  _pickImage(ImageSource.gallery, type);
                 },
               ),
               ListTile(
@@ -111,17 +154,29 @@ class _AddEditStudentScreenState extends State<AddEditStudentScreen> {
                 title: const Text('Take a Photo'),
                 onTap: () {
                   Navigator.pop(context);
-                  _pickImage(ImageSource.camera);
+                  _pickImage(ImageSource.camera, type);
                 },
               ),
-              if (_photoPath != null)
+              if ((type == 'profile' && _photoPath != null) ||
+                  (type == 'nidFront' && _nidFrontPath != null) ||
+                  (type == 'nidBack' && _nidBackPath != null))
                 ListTile(
                   leading: const Icon(Icons.delete),
                   title: const Text('Remove Photo'),
                   onTap: () {
                     Navigator.pop(context);
                     setState(() {
-                      _photoPath = null;
+                      switch (type) {
+                        case 'profile':
+                          _photoPath = null;
+                          break;
+                        case 'nidFront':
+                          _nidFrontPath = null;
+                          break;
+                        case 'nidBack':
+                          _nidBackPath = null;
+                          break;
+                      }
                     });
                   },
                 ),
@@ -149,6 +204,12 @@ class _AddEditStudentScreenState extends State<AddEditStudentScreen> {
         courseDuration: _selectedCourseDuration!,
         startDate: _selectedStartDate,
         amount: double.parse(_amountController.text),
+        nidNumber:
+            _nidNumberController.text.isEmpty
+                ? null
+                : _nidNumberController.text,
+        nidFrontPath: _nidFrontPath,
+        nidBackPath: _nidBackPath,
       );
 
       if (widget.student == null) {
@@ -171,40 +232,52 @@ class _AddEditStudentScreenState extends State<AddEditStudentScreen> {
         child: Form(
           key: _formKey,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              GestureDetector(
-                onTap: _showImagePickerOptions,
-                child: Stack(
-                  children: [
-                    CircleAvatar(
-                      radius: 60,
-                      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                      backgroundImage: _photoPath != null ? FileImage(File(_photoPath!)) : null,
-                      child: _photoPath == null
-                          ? Icon(
-                              Icons.person,
-                              size: 60,
-                              color: Theme.of(context).colorScheme.onPrimaryContainer,
-                            )
-                          : null,
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.camera_alt,
-                          size: 20,
-                          color: Theme.of(context).colorScheme.onPrimary,
+              // Profile Photo Section
+              Center(
+                child: GestureDetector(
+                  onTap: () => _showImagePickerOptions('profile'),
+                  child: Stack(
+                    children: [
+                      CircleAvatar(
+                        radius: 60,
+                        backgroundColor:
+                            Theme.of(context).colorScheme.primaryContainer,
+                        backgroundImage:
+                            _photoPath != null
+                                ? FileImage(File(_photoPath!))
+                                : null,
+                        child:
+                            _photoPath == null
+                                ? Icon(
+                                  Icons.person,
+                                  size: 60,
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).colorScheme.onPrimaryContainer,
+                                )
+                                : null,
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.camera_alt,
+                            size: 20,
+                            color: Theme.of(context).colorScheme.onPrimary,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: kMediumPadding),
@@ -344,6 +417,102 @@ class _AddEditStudentScreenState extends State<AddEditStudentScreen> {
               ),
               const SizedBox(height: kLargePadding),
 
+              // NID Section
+              const Text(
+                'NID Information',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: kMediumPadding),
+
+              TextFormField(
+                controller: _nidNumberController,
+                decoration: const InputDecoration(
+                  labelText: 'NID Number',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.text,
+              ),
+              const SizedBox(height: kMediumPadding),
+
+              // NID Photos
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      children: [
+                        const Text('NID Front'),
+                        const SizedBox(height: 8),
+                        GestureDetector(
+                          onTap: () => _showImagePickerOptions('nidFront'),
+                          child: Container(
+                            height: 120,
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child:
+                                _nidFrontPath != null
+                                    ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Image.file(
+                                        File(_nidFrontPath!),
+                                        fit: BoxFit.cover,
+                                      ),
+                                    )
+                                    : Icon(
+                                      Icons.add_photo_alternate,
+                                      size: 40,
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
+                                    ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: kMediumPadding),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        const Text('NID Back'),
+                        const SizedBox(height: 8),
+                        GestureDetector(
+                          onTap: () => _showImagePickerOptions('nidBack'),
+                          child: Container(
+                            height: 120,
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child:
+                                _nidBackPath != null
+                                    ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Image.file(
+                                        File(_nidBackPath!),
+                                        fit: BoxFit.cover,
+                                      ),
+                                    )
+                                    : Icon(
+                                      Icons.add_photo_alternate,
+                                      size: 40,
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
+                                    ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: kLargePadding),
+
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -357,7 +526,7 @@ class _AddEditStudentScreenState extends State<AddEditStudentScreen> {
                     ),
                   ),
                   child: Text(
-                    widget.student == null ? 'Save Student' : 'Update Student',
+                    widget.student == null ? 'Add Student' : 'Update Student',
                     style: const TextStyle(fontSize: 18),
                   ),
                 ),
