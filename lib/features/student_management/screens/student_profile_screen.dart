@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'dart:io';
 import 'package:suprobhat_driving_app/app/config/constants.dart';
 import 'package:suprobhat_driving_app/app/data/models/student_model.dart';
 import 'package:suprobhat_driving_app/app/data/providers/student_provider.dart';
 import 'package:suprobhat_driving_app/features/student_management/screens/add_edit_student_screen.dart';
 import 'package:suprobhat_driving_app/features/student_management/widgets/profile_detail_item.dart';
+import 'package:suprobhat_driving_app/features/student_management/widgets/attendance_calendar.dart';
 import 'package:suprobhat_driving_app/shared_widgets/custom_app_bar.dart';
 
 class StudentProfileScreen extends StatelessWidget {
@@ -38,24 +40,29 @@ class StudentProfileScreen extends StatelessWidget {
             onPressed: () {
               showDialog(
                 context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Delete Student'),
-                  content: Text('Are you sure you want to delete ${student.name}?'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Cancel'),
+                builder:
+                    (context) => AlertDialog(
+                      title: const Text('Delete Student'),
+                      content: Text(
+                        'Are you sure you want to delete ${student.name}?',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            studentProvider.deleteStudent(student.id);
+                            Navigator.of(context).pop(); // Close dialog
+                            Navigator.of(
+                              context,
+                            ).pop(); // Pop back to student list
+                          },
+                          child: const Text('Delete'),
+                        ),
+                      ],
                     ),
-                    TextButton(
-                      onPressed: () {
-                        studentProvider.deleteStudent(student.id);
-                        Navigator.of(context).pop(); // Close dialog
-                        Navigator.of(context).pop(); // Pop back to student list
-                      },
-                      child: const Text('Delete'),
-                    ),
-                  ],
-                ),
               );
             },
           ),
@@ -69,9 +76,18 @@ class StudentProfileScreen extends StatelessWidget {
             CircleAvatar(
               radius: 80,
               backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-              child: student.photoPath == null
-                  ? Icon(Icons.person, size: 80, color: Theme.of(context).colorScheme.onPrimaryContainer)
-                  : null, // TODO: Display image from student.photoPath
+              backgroundImage:
+                  student.photoPath != null
+                      ? FileImage(File(student.photoPath!))
+                      : null,
+              child:
+                  student.photoPath == null
+                      ? Icon(
+                        Icons.person,
+                        size: 80,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      )
+                      : null,
             ),
             const SizedBox(height: kLargePadding),
             ProfileDetailItem(
@@ -110,13 +126,13 @@ class StudentProfileScreen extends StatelessWidget {
               value: '₹ ${student.amount.toStringAsFixed(2)}',
             ),
             const SizedBox(height: kLargePadding),
-            Text(
-              'Attendance Progress',
-              style: kSubHeadingTextStyle,
-            ),
+            Text('Attendance Progress', style: kSubHeadingTextStyle),
             const SizedBox(height: kSmallPadding),
             LinearProgressIndicator(
-              value: totalAttendanceDays > 0 ? attendedDays / totalAttendanceDays : 0,
+              value:
+                  totalAttendanceDays > 0
+                      ? attendedDays / totalAttendanceDays
+                      : 0,
               minHeight: 10,
               backgroundColor: Theme.of(context).colorScheme.primaryContainer,
               color: Theme.of(context).colorScheme.primary,
@@ -126,6 +142,15 @@ class StudentProfileScreen extends StatelessWidget {
               'Attended: $attendedDays / $totalAttendanceDays days',
               style: kBodyTextStyle,
             ),
+            const SizedBox(height: kLargePadding),
+            Text('Attendance Calendar', style: kSubHeadingTextStyle),
+            const SizedBox(height: kSmallPadding),
+            AttendanceCalendar(
+              studentId: student.id,
+              startDate: student.startDate,
+              endDate: student.endDate,
+            ),
+            const SizedBox(height: 100),
           ],
         ),
       ),

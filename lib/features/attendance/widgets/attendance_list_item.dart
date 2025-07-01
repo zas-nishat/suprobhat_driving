@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:suprobhat_driving_app/app/config/constants.dart';
-import 'package:suprobhat_driving_app/app/data/models/attendance_model.dart';
 import 'package:suprobhat_driving_app/app/data/models/student_model.dart';
-
-import '../../../app/data/providers/student_provider.dart';
+import 'package:suprobhat_driving_app/app/data/providers/student_provider.dart';
+import 'dart:io';
 
 class AttendanceListItem extends StatefulWidget {
   final Student student;
@@ -22,6 +21,7 @@ class AttendanceListItem extends StatefulWidget {
 
 class _AttendanceListItemState extends State<AttendanceListItem> {
   bool _isPresent = false;
+  bool _isAttendanceMarked = false;
 
   @override
   void initState() {
@@ -41,37 +41,56 @@ class _AttendanceListItemState extends State<AttendanceListItem> {
   }
 
   void _updateAttendanceStatus() {
-    final attendanceProvider = Provider.of<StudentProvider>(
+    final studentProvider = Provider.of<StudentProvider>(
       context,
       listen: false,
     );
-    final records = attendanceProvider.getAttendanceForDate(
-      widget.selectedDate,
+    
+    final attendanceMap = studentProvider.getAttendanceMap(widget.student.id);
+    final date = DateTime(
+      widget.selectedDate.year,
+      widget.selectedDate.month,
+      widget.selectedDate.day,
     );
-    final existingRecord = records.firstWhere(
-      (record) => record.studentId == widget.student.id,
-      orElse:
-          () => Attendance(
-            studentId: widget.student.id,
-            date: widget.selectedDate,
-            isPresent: false,
-          ),
-    );
+    
     setState(() {
-      _isPresent = existingRecord.isPresent;
+      _isAttendanceMarked = attendanceMap.containsKey(date);
+      _isPresent = attendanceMap[date] ?? false;
     });
   }
 
-  void _toggleAttendance(bool value) {
+  void _toggleAttendance(bool? value) {
+    // If already marked as present, don't allow changes
+    if (_isPresent) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Attendance is already marked for this day'),
+          backgroundColor: Colors.teal,
+          duration: Duration(seconds: 1),
+        ),
+      );
+      return;
+    }
+
+    if (value == null || !value) return; // Only allow marking as present
+
     setState(() {
-      _isPresent = value;
+      _isPresent = true;
+      _isAttendanceMarked = true;
     });
 
-    Provider.of<StudentProvider>(context, listen: false).addOrUpdateAttendance(
-      Attendance(
-        studentId: widget.student.id,
-        date: widget.selectedDate,
-        isPresent: value,
+    Provider.of<StudentProvider>(context, listen: false).markAttendance(
+      widget.student.id,
+      widget.selectedDate,
+      true,
+    );
+
+    // Show confirmation
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Attendance marked as present'),
+        duration: Duration(seconds: 1),
+        backgroundColor: Colors.teal,
       ),
     );
   }
@@ -92,29 +111,48 @@ class _AttendanceListItemState extends State<AttendanceListItem> {
           children: [
             CircleAvatar(
               backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-              backgroundImage:
-                  widget.student.photoPath != null
-                      ? NetworkImage(
-                        widget.student.photoPath!,
-                      ) // or FileImage if from local
-                      : null,
-              child:
-                  widget.student.photoPath == null
-                      ? Icon(
-                        Icons.person,
-                        color: Theme.of(context).colorScheme.onPrimaryContainer,
-                      )
-                      : null,
+              backgroundImage: widget.student.photoPath != null
+                  ? FileImage(File(widget.student.photoPath!))
+                  : null,
+              child: widget.student.photoPath == null
+                  ? Icon(
+                      Icons.person,
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    )
+                  : null,
             ),
             const SizedBox(width: kMediumPadding),
             Expanded(
-              child: Text(
-                widget.student.name,
-                style: kBodyTextStyle.copyWith(fontWeight: FontWeight.bold),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.student.name,
+                    style: kBodyTextStyle.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    widget.student.phone,
+                    style: kBodyTextStyle.copyWith(
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
+                  ),
+                  if (_isAttendanceMarked)
+                    Text(
+                      _isPresent ? 'Present' : 'Absent',
+                      style: TextStyle(
+                        color: _isPresent ? Colors.teal : Colors.red,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                ],
               ),
             ),
-            Switch(value: _isPresent, onChanged: _toggleAttendance),
-            Text(_isPresent ? 'Present' : 'Absent'),
+            Switch(
+              value: _isPresent,
+              onChanged: _isPresent ? null : _toggleAttendance,
+              activeColor: Colors.teal,
+            ),
           ],
         ),
       ),

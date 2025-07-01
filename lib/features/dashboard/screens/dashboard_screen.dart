@@ -79,13 +79,11 @@ class _DashboardContent extends StatelessWidget {
               builder: (context, studentProvider, child) {
                 final totalStudents = studentProvider.students.length;
                 final today = DateTime.now();
-                final todayAttendance = studentProvider.attendanceRecords
-                    .where((record) =>
-                        record.date.year == today.year &&
-                        record.date.month == today.month &&
-                        record.date.day == today.day &&
-                        record.isPresent)
+                final todayAttendance = studentProvider
+                    .getAttendanceForDate(today)
+                    .where((record) => record.isPresent)
                     .length;
+
                 return Row(
                   children: [
                     Expanded(

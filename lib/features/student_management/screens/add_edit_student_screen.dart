@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import 'package:suprobhat_driving_app/app/config/constants.dart';
 import 'package:suprobhat_driving_app/app/data/models/student_model.dart';
 import 'package:suprobhat_driving_app/app/data/providers/student_provider.dart';
@@ -21,11 +23,12 @@ class _AddEditStudentScreenState extends State<AddEditStudentScreen> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
+  final ImagePicker _picker = ImagePicker();
 
   String? _selectedCourseType;
   int? _selectedCourseDuration;
   DateTime _selectedStartDate = DateTime.now();
-  String? _photoPath; // TODO: Implement image picking
+  String? _photoPath;
 
   @override
   void initState() {
@@ -63,6 +66,70 @@ class _AddEditStudentScreenState extends State<AddEditStudentScreen> {
         _selectedStartDate = picked;
       });
     }
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final XFile? pickedFile = await _picker.pickImage(
+        source: source,
+        maxWidth: 800,
+        maxHeight: 800,
+        imageQuality: 85,
+      );
+
+      if (pickedFile != null) {
+        setState(() {
+          _photoPath = pickedFile.path;
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to pick image. Please try again.'),
+        ),
+      );
+    }
+  }
+
+  void _showImagePickerOptions() {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Choose from Gallery'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.gallery);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_camera),
+                title: const Text('Take a Photo'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.camera);
+                },
+              ),
+              if (_photoPath != null)
+                ListTile(
+                  leading: const Icon(Icons.delete),
+                  title: const Text('Remove Photo'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    setState(() {
+                      _photoPath = null;
+                    });
+                  },
+                ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   void _saveStudent() {
@@ -105,29 +172,40 @@ class _AddEditStudentScreenState extends State<AddEditStudentScreen> {
           key: _formKey,
           child: Column(
             children: [
-              // Photo Picker (Placeholder)
-              CircleAvatar(
-                radius: 60,
-                backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                child:
-                    _photoPath == null
-                        ? Icon(
-                          Icons.person,
-                          size: 60,
-                          color:
-                              Theme.of(context).colorScheme.onPrimaryContainer,
-                        )
-                        : null, // TODO: Display image from _photoPath
-              ),
-              TextButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Image picking not yet implemented.'),
+              GestureDetector(
+                onTap: _showImagePickerOptions,
+                child: Stack(
+                  children: [
+                    CircleAvatar(
+                      radius: 60,
+                      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                      backgroundImage: _photoPath != null ? FileImage(File(_photoPath!)) : null,
+                      child: _photoPath == null
+                          ? Icon(
+                              Icons.person,
+                              size: 60,
+                              color: Theme.of(context).colorScheme.onPrimaryContainer,
+                            )
+                          : null,
                     ),
-                  );
-                },
-                child: const Text('Add Photo'),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.camera_alt,
+                          size: 20,
+                          color: Theme.of(context).colorScheme.onPrimary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: kMediumPadding),
 

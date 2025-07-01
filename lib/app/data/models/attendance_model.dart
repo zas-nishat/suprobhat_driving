@@ -1,7 +1,7 @@
 class Attendance {
-  String studentId;
-  DateTime date;
-  bool isPresent;
+  final String studentId;
+  final DateTime date;
+  final bool isPresent;
 
   Attendance({
     required this.studentId,
