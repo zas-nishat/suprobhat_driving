@@ -4,8 +4,8 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 class VideoProvider with ChangeNotifier {
   // This list will hold the YouTube video IDs
   final List<String> _videoIds = [
-    '_y_J-211_0Q', // Example video ID 1
-    '_y_J-211_0Q', // Example video ID 2
+    'Rs1zMDbmdHI&t=55s', // Example video ID 1
+    'Rs1zMDbmdHI&t=55s', // Example video ID 2
     '_y_J-211_0Q', // Example video ID 3
     // Add more video IDs from the YouTube channel: https://www.youtube.com/@suprobhatdrivingtrainingce5295
     // You'll need to manually extract these IDs from the video URLs.

@@ -24,7 +24,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _DashboardContent(),
     const StudentListScreen(),
     const AttendanceTrackerScreen(),
-    const VideoGridScreen(),
+    ChannelPage(),
   ];
 
   void _onItemTapped(int index) {
@@ -43,17 +43,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
             icon: Icon(Icons.dashboard),
             label: 'Dashboard',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.people),
-            label: 'Students',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Students'),
           BottomNavigationBarItem(
             icon: Icon(Icons.check_circle),
             label: 'Attendance',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.video_library),
-            label: 'Videos',
+            label: 'Youtube',
           ),
         ],
         currentIndex: _selectedIndex,
@@ -79,10 +76,11 @@ class _DashboardContent extends StatelessWidget {
               builder: (context, studentProvider, child) {
                 final totalStudents = studentProvider.students.length;
                 final today = DateTime.now();
-                final todayAttendance = studentProvider
-                    .getAttendanceForDate(today)
-                    .where((record) => record.isPresent)
-                    .length;
+                final todayAttendance =
+                    studentProvider
+                        .getAttendanceForDate(today)
+                        .where((record) => record.isPresent)
+                        .length;
 
                 return Row(
                   children: [
@@ -106,15 +104,13 @@ class _DashboardContent extends StatelessWidget {
               },
             ),
             const SizedBox(height: kLargePadding),
-            Text(
-              'Upcoming Course End Reminders',
-              style: kSubHeadingTextStyle,
-            ),
+            Text('Upcoming Course End Reminders', style: kSubHeadingTextStyle),
             const SizedBox(height: kSmallPadding),
             Expanded(
               child: Consumer<StudentProvider>(
                 builder: (context, studentProvider, child) {
-                  final upcomingStudents = studentProvider.getUpcomingCourseEndStudents();
+                  final upcomingStudents =
+                      studentProvider.getUpcomingCourseEndStudents();
                   if (upcomingStudents.isEmpty) {
                     return const Center(
                       child: Text('No upcoming course endings.'),
