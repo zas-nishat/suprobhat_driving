@@ -30,20 +30,12 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
 
   Widget _buildNidSection() {
     if (!_showNidInfo) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: kMediumPadding),
-        child: Center(
-          child: ElevatedButton.icon(
-            onPressed: _toggleNidInfo,
-            icon: const Icon(Icons.visibility),
-            label: const Text('View NID Information'),
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(
-                horizontal: kLargePadding,
-                vertical: kMediumPadding,
-              ),
-            ),
-          ),
+      return ElevatedButton.icon(
+        onPressed: _toggleNidInfo,
+        icon: const Icon(Icons.visibility),
+        label: const Text('View NID Information'),
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         ),
       );
     }
@@ -69,7 +61,8 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
             label: 'NID Number',
             value: widget.student.nidNumber!,
           ),
-        if (widget.student.nidFrontPath != null || widget.student.nidBackPath != null)
+        if (widget.student.nidFrontPath != null ||
+            widget.student.nidBackPath != null)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: kMediumPadding),
             child: Row(
@@ -84,12 +77,13 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                           onTap: () {
                             showDialog(
                               context: context,
-                              builder: (context) => Dialog(
-                                child: Image.file(
-                                  File(widget.student.nidFrontPath!),
-                                  fit: BoxFit.contain,
-                                ),
-                              ),
+                              builder:
+                                  (context) => Dialog(
+                                    child: Image.file(
+                                      File(widget.student.nidFrontPath!),
+                                      fit: BoxFit.contain,
+                                    ),
+                                  ),
                             );
                           },
                           child: Container(
@@ -97,7 +91,9 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(8),
                               image: DecorationImage(
-                                image: FileImage(File(widget.student.nidFrontPath!)),
+                                image: FileImage(
+                                  File(widget.student.nidFrontPath!),
+                                ),
                                 fit: BoxFit.cover,
                               ),
                             ),
@@ -106,7 +102,8 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                       ],
                     ),
                   ),
-                if (widget.student.nidFrontPath != null && widget.student.nidBackPath != null)
+                if (widget.student.nidFrontPath != null &&
+                    widget.student.nidBackPath != null)
                   const SizedBox(width: kMediumPadding),
                 if (widget.student.nidBackPath != null)
                   Expanded(
@@ -118,12 +115,13 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                           onTap: () {
                             showDialog(
                               context: context,
-                              builder: (context) => Dialog(
-                                child: Image.file(
-                                  File(widget.student.nidBackPath!),
-                                  fit: BoxFit.contain,
-                                ),
-                              ),
+                              builder:
+                                  (context) => Dialog(
+                                    child: Image.file(
+                                      File(widget.student.nidBackPath!),
+                                      fit: BoxFit.contain,
+                                    ),
+                                  ),
                             );
                           },
                           child: Container(
@@ -131,7 +129,9 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(8),
                               image: DecorationImage(
-                                image: FileImage(File(widget.student.nidBackPath!)),
+                                image: FileImage(
+                                  File(widget.student.nidBackPath!),
+                                ),
                                 fit: BoxFit.cover,
                               ),
                             ),
@@ -162,7 +162,9 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (context) => AddEditStudentScreen(student: widget.student),
+                  builder:
+                      (context) =>
+                          AddEditStudentScreen(student: widget.student),
                 ),
               );
             },
@@ -172,26 +174,29 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
             onPressed: () {
               showDialog(
                 context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Delete Student'),
-                  content: Text(
-                    'Are you sure you want to delete ${widget.student.name}?',
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Cancel'),
+                builder:
+                    (context) => AlertDialog(
+                      title: const Text('Delete Student'),
+                      content: Text(
+                        'Are you sure you want to delete ${widget.student.name}?',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            studentProvider.deleteStudent(widget.student.id);
+                            Navigator.of(context).pop(); // Close dialog
+                            Navigator.of(
+                              context,
+                            ).pop(); // Pop back to student list
+                          },
+                          child: const Text('Delete'),
+                        ),
+                      ],
                     ),
-                    TextButton(
-                      onPressed: () {
-                        studentProvider.deleteStudent(widget.student.id);
-                        Navigator.of(context).pop(); // Close dialog
-                        Navigator.of(context).pop(); // Pop back to student list
-                      },
-                      child: const Text('Delete'),
-                    ),
-                  ],
-                ),
               );
             },
           ),
@@ -212,10 +217,10 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
               child:
                   widget.student.photoPath == null
                       ? Icon(
-                          Icons.person,
-                          size: 80,
-                          color: Theme.of(context).colorScheme.onPrimaryContainer,
-                        )
+                        Icons.person,
+                        size: 80,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      )
                       : null,
             ),
             const SizedBox(height: kLargePadding),
@@ -255,15 +260,18 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
               value: '₹ ${widget.student.amount.toStringAsFixed(2)}',
             ),
             const SizedBox(height: kLargePadding),
-            
+
             // NID Section with toggle
-            _buildNidSection(),
-            
+            Align(alignment: Alignment.topLeft, child: _buildNidSection()),
+
             const SizedBox(height: kLargePadding),
             Text('Attendance Progress', style: kSubHeadingTextStyle),
             const SizedBox(height: kSmallPadding),
             LinearProgressIndicator(
-              value: totalAttendanceDays > 0 ? attendedDays / totalAttendanceDays : 0,
+              value:
+                  totalAttendanceDays > 0
+                      ? attendedDays / totalAttendanceDays
+                      : 0,
               minHeight: 10,
               backgroundColor: Theme.of(context).colorScheme.primaryContainer,
               color: Theme.of(context).colorScheme.primary,
